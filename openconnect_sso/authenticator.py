@@ -8,9 +8,10 @@ from openconnect_sso.saml_authenticator import authenticate_in_browser
 
 logger = structlog.get_logger()
 
-# Hardened XML parser: disables entity resolution, DTD loading, and network access
-# to prevent XXE attacks from malicious IdP responses or crafted profile files.
-_SAFE_XML_PARSER = etree.XMLParser(
+# Hardened objectify parser: disables entity resolution, DTD loading, and network
+# access to prevent XXE attacks. Must use objectify.makeparser() (not etree.XMLParser)
+# so parsed elements remain ObjectifiedElement instances with attribute-style access.
+_SAFE_XML_PARSER = objectify.makeparser(
     resolve_entities=False,
     no_network=True,
     load_dtd=False,
