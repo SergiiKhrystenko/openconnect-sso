@@ -27,10 +27,11 @@ Or via pip into a virtualenv of your choice:
 pip install git+https://github.com/SergiiKhrystenko/openconnect-sso.git
 ```
 
-### Windows *(EXPERIMENTAL)*
+## Updating
 
-Install with [pip/pipx](#using-pippipx) and be sure that you have `sudo` and `openconnect`
-executable commands in your PATH.
+```shell
+pipx install --force "git+https://github.com/SergiiKhrystenko/openconnect-sso.git"
+```
 
 ## Usage
 

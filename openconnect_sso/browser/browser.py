@@ -1,4 +1,5 @@
 import asyncio
+import logging
 
 import structlog
 
@@ -9,7 +10,7 @@ logger = structlog.get_logger()
 
 
 class Browser:
-    def __init__(self, proxy=None, display_mode=DisplayMode.SHOWN):
+    def __init__(self, proxy=None, display_mode=DisplayMode.SHOWN, log_level=logging.WARNING):
         self.browser_proc = None
         self.updater = None
         self.running = False
@@ -18,9 +19,10 @@ class Browser:
         self.cookies = {}
         self.proxy = proxy
         self.display_mode = display_mode
+        self.log_level = log_level
 
     async def spawn(self):
-        self.browser_proc = web.Process(self.proxy, self.display_mode)
+        self.browser_proc = web.Process(self.proxy, self.display_mode, self.log_level)
         self.browser_proc.start()
         self.running = True
 
