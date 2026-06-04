@@ -112,4 +112,10 @@ Run tests (Qt WebEngine requires a display; `xvfb-run` provides one on headless 
 xvfb-run -a pytest
 ```
 
+Auto-fix code style:
+
+```shell
+black .
+```
+
 Or use the included `Makefile`. Type `make help` to see available targets.

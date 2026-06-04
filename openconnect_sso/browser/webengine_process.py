@@ -10,6 +10,8 @@ import attr
 import structlog
 from importlib import resources
 
+from openconnect_sso._logging import configure_logger
+
 from PyQt6.QtCore import QUrl, QTimer, pyqtSlot, Qt
 from PyQt6.QtNetwork import QNetworkProxy
 from PyQt6.QtWebEngineCore import QWebEngineScript, QWebEngineProfile, QWebEnginePage
@@ -76,7 +78,7 @@ class Process(multiprocessing.Process):
         signal.signal(signal.SIGTERM, on_sigterm)
         signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-        logging.getLogger().setLevel(self.log_level)
+        configure_logger(self.log_level)
 
         cfg = config.load()
 
