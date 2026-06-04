@@ -1,3 +1,5 @@
+import logging
+
 import attr
 import requests
 import structlog
@@ -19,11 +21,19 @@ _SAFE_XML_PARSER = objectify.makeparser(
 
 
 class Authenticator:
-    def __init__(self, host, proxy=None, credentials=None, version=None):
+    def __init__(
+        self,
+        host,
+        proxy=None,
+        credentials=None,
+        version=None,
+        log_level=logging.WARNING,
+    ):
         self.host = host
         self.proxy = proxy
         self.credentials = credentials
         self.version = version
+        self.log_level = log_level
         self.session = create_http_session(proxy, version)
 
     async def authenticate(self, display_mode):
@@ -82,7 +92,11 @@ class Authenticator:
 
     async def _authenticate_in_browser(self, auth_request_response, display_mode):
         return await authenticate_in_browser(
-            self.proxy, auth_request_response, self.credentials, display_mode
+            self.proxy,
+            auth_request_response,
+            self.credentials,
+            display_mode,
+            self.log_level,
         )
 
     def _complete_authentication(self, auth_request_response, sso_token):

@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import multiprocessing
 import signal
 import sys
@@ -46,13 +47,14 @@ class SetCookie:
 
 
 class Process(multiprocessing.Process):
-    def __init__(self, proxy, display_mode):
+    def __init__(self, proxy, display_mode, log_level=logging.WARNING):
         super().__init__()
 
         self._commands = multiprocessing.Queue()
         self._states = multiprocessing.Queue()
         self.proxy = proxy
         self.display_mode = display_mode
+        self.log_level = log_level
 
     def authenticate_at(self, url, credentials):
         self._commands.put(StartupInfo(url, credentials))
@@ -73,6 +75,8 @@ class Process(multiprocessing.Process):
 
         signal.signal(signal.SIGTERM, on_sigterm)
         signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+        logging.getLogger().setLevel(self.log_level)
 
         cfg = config.load()
 
