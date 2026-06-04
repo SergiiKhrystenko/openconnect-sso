@@ -1,14 +1,15 @@
 from pathlib import Path
 
 import structlog
-from lxml import etree, objectify
+from lxml import objectify
 
 from openconnect_sso.config import HostProfile
 
 logger = structlog.get_logger()
 
-# Hardened XML parser: prevents XXE from attacker-supplied profile files.
-_SAFE_XML_PARSER = etree.XMLParser(
+# Hardened objectify parser: prevents XXE from attacker-supplied profile files.
+# Must use objectify.makeparser() to preserve ObjectifiedElement attribute access.
+_SAFE_XML_PARSER = objectify.makeparser(
     resolve_entities=False,
     no_network=True,
     load_dtd=False,
