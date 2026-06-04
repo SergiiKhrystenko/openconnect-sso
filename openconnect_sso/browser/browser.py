@@ -10,7 +10,9 @@ logger = structlog.get_logger()
 
 
 class Browser:
-    def __init__(self, proxy=None, display_mode=DisplayMode.SHOWN, log_level=logging.WARNING):
+    def __init__(
+        self, proxy=None, display_mode=DisplayMode.SHOWN, log_level=logging.WARNING
+    ):
         self.browser_proc = None
         self.updater = None
         self.running = False
