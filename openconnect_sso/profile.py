@@ -1,11 +1,18 @@
 from pathlib import Path
 
 import structlog
-from lxml import objectify
+from lxml import etree, objectify
 
 from openconnect_sso.config import HostProfile
 
 logger = structlog.get_logger()
+
+# Hardened XML parser: prevents XXE from attacker-supplied profile files.
+_SAFE_XML_PARSER = etree.XMLParser(
+    resolve_entities=False,
+    no_network=True,
+    load_dtd=False,
+)
 
 ns = {"enc": "http://schemas.xmlsoap.org/encoding/"}
 
@@ -14,7 +21,7 @@ def _get_profiles_from_one_file(path):
     logger.info("Loading profiles from file", path=path.name)
 
     with path.open() as f:
-        xml = objectify.parse(f)
+        xml = objectify.parse(f, parser=_SAFE_XML_PARSER)
 
     hostentries = xml.xpath(
         "//enc:AnyConnectProfile/enc:ServerList/enc:HostEntry", namespaces=ns

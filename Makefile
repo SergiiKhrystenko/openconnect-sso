@@ -1,4 +1,3 @@
-NIX_QTWRAPPER ?= # Set up environment for locating Qt libraries from Nix
 CONTINUE_ON_ERROR ?= # should be used only for testing
 
 PRE_COMMIT_HOME=$(dir MAKEFILE_LIST).git/pre-commit
@@ -100,9 +99,8 @@ dev:  ## Initializes repository for development
 	$(echo-stage) "Updating pip in .venv..."
 	$(VENV_BIN)/python -m pip install --upgrade pip
 	$(echo-stage) "Installing openconnect-sso in develop mode..."
-	(source $(VENV_BIN)/activate && poetry install $(POETRYARGS))
+	$(VENV_BIN)/pip install -e ".[test]"
 	$(echo-success) "Development installation finished."
-dev: POETRYARGS ?= ## Additional arguments for poetry install
 dev: PRECOMMIT ?= yes ## Install pre-commit hooks
 
 pre-commit-install:
@@ -124,7 +122,7 @@ pre-commit: pre-commit-install
 
 .PHONY: test
 test:  ## Run tests
-	$(NIX_QTWRAPPER) $(VENV_BIN)/pytest
+	$(VENV_BIN)/pytest
 
 ###############################################################################
 ## Release
@@ -132,7 +130,7 @@ VERSION = $(shell $(VENV_BIN)/python -c 'import openconnect_sso; print(f"v{openc
 
 .PHONY: dist
 dist:  ## Build packages from whatever state the repository is
-	poetry build
+	$(VENV_BIN)/python -m build
 	cp CHANGELOG.md dist/CHANGELOG-$(VERSION).md
 
 .PHONY: tag-repo

@@ -31,10 +31,8 @@ def run(args):
 
     try:
         if os.name == "nt":
-            asyncio.set_event_loop(asyncio.ProactorEventLoop())
-        auth_response, selected_profile = asyncio.get_event_loop().run_until_complete(
-            _run(args, cfg)
-        )
+            asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+        auth_response, selected_profile = asyncio.run(_run(args, cfg))
     except KeyboardInterrupt:
         logger.warn("CTRL-C pressed, exiting")
         return 130
@@ -171,7 +169,7 @@ async def select_profile(profile_list):
     # Somehow prompt_toolkit sets up a bogus signal handler upon exit
     # TODO: Report this issue upstream
     if hasattr(signal, "SIGWINCH"):
-        asyncio.get_event_loop().remove_signal_handler(signal.SIGWINCH)
+        asyncio.get_running_loop().remove_signal_handler(signal.SIGWINCH)
     if not selection:
         return selection
     logger.info("Selected profile", profile=selection.name)
@@ -222,5 +220,8 @@ def run_openconnect(auth_info, host, proxy, version, args):
 
 def handle_disconnect(command):
     if command:
-        logger.info("Running command on disconnect", command_line=command)
+        logger.warning(
+            "Running shell command on disconnect (sourced from config file)",
+            command=command,
+        )
         return subprocess.run(command, timeout=5, shell=True).returncode
