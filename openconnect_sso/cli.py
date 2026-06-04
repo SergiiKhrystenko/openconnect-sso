@@ -87,8 +87,10 @@ def create_argparser():
 
     parser.add_argument(
         "--on-disconnect-shell",
-        help="Run the on-disconnect command via shell (enables pipes and shell expansion). "
-             "WARNING: use only when the config file is trusted and owner-only (0600).",
+        help=(
+            "Run the on-disconnect command via shell (enables pipes and shell expansion). "
+            "WARNING: use only when the config file is trusted and owner-only (0600)."
+        ),
         action="store_true",
         default=False,
     )

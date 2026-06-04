@@ -146,7 +146,11 @@ class WebBrowser(QWebEngineView):
             return self._popupWindow.view()
 
     def authenticate_at(self, url, credentials):
-        script_source = resources.files("openconnect_sso.browser").joinpath("user.js").read_text(encoding="utf-8")
+        script_source = (
+            resources.files("openconnect_sso.browser")
+            .joinpath("user.js")
+            .read_text(encoding="utf-8")
+        )
         script = QWebEngineScript()
         script.setInjectionPoint(QWebEngineScript.InjectionPoint.DocumentCreation)
         script.setWorldId(QWebEngineScript.ScriptWorldId.ApplicationWorld)
@@ -154,7 +158,10 @@ class WebBrowser(QWebEngineView):
         self.page().scripts().insert(script)
 
         if credentials:
-            logger.info("Initiating autologin", username=getattr(credentials, "username", None))
+            logger.info(
+                "Initiating autologin",
+                username=getattr(credentials, "username", None),
+            )
             for url_pattern, rules in self._auto_fill_rules.items():
                 script = QWebEngineScript()
                 script.setInjectionPoint(QWebEngineScript.InjectionPoint.DocumentReady)
