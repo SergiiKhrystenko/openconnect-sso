@@ -4,89 +4,27 @@ Wrapper script for OpenConnect supporting Azure AD (SAMLv2) authentication
 to Cisco SSL-VPNs
 
 [![Tests Status
-](https://github.com/vlaci/openconnect-sso/workflows/Tests/badge.svg?branch=master&event=push)](https://github.com/vlaci/openconnect-sso/actions?query=workflow%3ATests+branch%3Amaster+event%3Apush)
+](https://github.com/SergiiKhrystenko/openconnect-sso/workflows/Tests/badge.svg?branch=master&event=push)](https://github.com/SergiiKhrystenko/openconnect-sso/actions?query=workflow%3ATests+branch%3Amaster+event%3Apush)
 
 ## Installation
 
 ### Using pip/pipx
 
-A generic way that works on most 'standard' Linux distributions out of the box.
-The following example shows how to install `openconect-sso` along with its
-dependencies including Qt:
+Requires **Python 3.12 or newer** on **Linux**.
+
+> **Note:** This is a maintained fork. Install directly from GitHub — the PyPI
+> package is the unmaintained upstream version.
+
+Install via pipx (recommended for isolated installs):
 
 ```shell
-$ pip install --user pipx
-Successfully installed pipx
-$ pipx install "openconnect-sso[full]"
-⣾ installing openconnect-sso
-  installed package openconnect-sso 0.4.0, Python 3.7.5
-  These apps are now globally available
-    - openconnect-sso
-⚠️  Note: '/home/vlaci/.local/bin' is not on your PATH environment variable.
-These apps will not be globally accessible until your PATH is updated. Run
-`pipx ensurepath` to automatically add it, or manually modify your PATH in your
-shell's config file (i.e. ~/.bashrc).
-done! ✨ 🌟 ✨
-Successfully installed openconnect-sso
-$ pipx ensurepath
-Success! Added /home/vlaci/.local/bin to the PATH environment variable.
-Consider adding shell completions for pipx. Run 'pipx completions' for
-instructions.
-
-You likely need to open a new terminal or re-login for the changes to take
-effect. ✨ 🌟 ✨
+pipx install git+https://github.com/SergiiKhrystenko/openconnect-sso.git
 ```
 
-Of course you can also install via `pip` instead of `pipx` if you'd like to
-install system-wide or a virtualenv of your choice.
-
-### On Arch Linux
-
-There is an unofficial package available for Arch Linux on
-[AUR](https://aur.archlinux.org/packages/openconnect-sso/). You can use your
-favorite AUR helper to install it:
-
-``` shell
-yay -S openconnect-sso
-```
-
-### Using nix
-
-The easiest method to try is by installing directly:
+Or via pip into a virtualenv of your choice:
 
 ```shell
-$ nix-env -i -f https://github.com/vlaci/openconnect-sso/archive/master.tar.gz
-unpacking 'https://github.com/vlaci/openconnect-sso/archive/master.tar.gz'...
-[...]
-installing 'openconnect-sso-0.4.0'
-these derivations will be built:
-  /nix/store/2z47740z1rr2cfqfin5lnq04sq3c5xjg-openconnect-sso-0.4.0.drv
-[...]
-building '/nix/store/50q496iqf840wi8b95cfmgn07k6y5b59-user-environment.drv'...
-created 606 symlinks in user environment
-$ openconnect-sso
-```
-
-An overlay is also available to use in nix expressions:
-
-``` nix
-let
-  openconnectOverlay = import "${builtins.fetchTarball https://github.com/vlaci/openconnect-sso/archive/master.tar.gz}/overlay.nix";
-  pkgs = import <nixpkgs> { overlays = [ openconnectOverlay ]; };
-in
-  #  pkgs.openconnect-sso is available in this context
-```
-
-... or to use in `configuration.nix`:
-
-``` nix
-{ config, ... }:
-
-{
-  nixpkgs.overlays = [
-    (import "${builtins.fetchTarball https://github.com/vlaci/openconnect-sso/archive/master.tar.gz}/overlay.nix")
-  ];
-}
+pip install git+https://github.com/SergiiKhrystenko/openconnect-sso.git
 ```
 
 ### Windows *(EXPERIMENTAL)*
@@ -159,37 +97,18 @@ openconnect-sso --server vpn.server.com/group --user user@domain.com -- --base-m
 
 ## Development
 
-`openconnect-sso` is developed using [Nix](https://nixos.org/nix/). Refer to the
-[Quick Start section of the Nix
-manual](https://nixos.org/nix/manual/#chap-quick-start) to see how to get it
-installed on your machine.
-
-To get dropped into a development environment, just type `nix-shell`:
+Requires Python 3.12 or newer. Set up a virtual environment and install in editable mode:
 
 ```shell
-$ nix-shell
-Sourcing python-catch-conflicts-hook.sh
-Sourcing python-remove-bin-bytecode-hook.sh
-Sourcing pip-build-hook
-Using pipBuildPhase
-Sourcing pip-install-hook
-Using pipInstallPhase
-Sourcing python-imports-check-hook.sh
-Using pythonImportsCheckPhase
-Run 'make help' for available commands
-
-[nix-shell]$
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[test]"
 ```
 
-To try an installed version of the package, issue `nix-build`:
+Run tests (Qt WebEngine requires a display; `xvfb-run` provides one on headless systems):
 
 ```shell
-$ nix build
-[1 built, 0.0 MiB DL]
-
-$ result/bin/openconnect-sso --help
+xvfb-run -a pytest
 ```
 
-Alternatively you may just [get Poetry](https://python-poetry.org/docs/) and
-start developing by using the included `Makefile`. Type `make help` to see the
-possible make targets.
+Or use the included `Makefile`. Type `make help` to see available targets.

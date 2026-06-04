@@ -8,6 +8,14 @@ from openconnect_sso.saml_authenticator import authenticate_in_browser
 
 logger = structlog.get_logger()
 
+# Hardened XML parser: disables entity resolution, DTD loading, and network access
+# to prevent XXE attacks from malicious IdP responses or crafted profile files.
+_SAFE_XML_PARSER = etree.XMLParser(
+    resolve_entities=False,
+    no_network=True,
+    load_dtd=False,
+)
+
 
 class Authenticator:
     def __init__(self, host, proxy=None, credentials=None, version=None):
@@ -64,7 +72,11 @@ class Authenticator:
         request = _create_auth_init_request(self.host, self.host.vpn_url, self.version)
         logger.debug("Sending auth init request", content=request)
         response = self.session.post(self.host.vpn_url, request)
-        logger.debug("Auth init response received", content=response.content)
+        logger.debug(
+            "Auth init response received",
+            status=response.status_code,
+            length=len(response.content),
+        )
         return parse_response(response)
 
     async def _authenticate_in_browser(self, auth_request_response, display_mode):
@@ -78,7 +90,11 @@ class Authenticator:
         )
         logger.debug("Sending auth finish request", content=request)
         response = self.session.post(self.host.vpn_url, request)
-        logger.debug("Auth finish response received", content=response.content)
+        logger.debug(
+            "Auth finish response received",
+            status=response.status_code,
+            length=len(response.content),
+        )
         return parse_response(response)
 
 
@@ -135,7 +151,7 @@ def _create_auth_init_request(host, url, version):
 
 def parse_response(resp):
     resp.raise_for_status()
-    xml = objectify.fromstring(resp.content)
+    xml = objectify.fromstring(resp.content, parser=_SAFE_XML_PARSER)
     t = xml.get("type")
     if t == "auth-request":
         return parse_auth_request_response(xml)

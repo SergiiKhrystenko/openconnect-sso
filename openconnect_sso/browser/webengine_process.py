@@ -6,11 +6,11 @@ import sys
 from urllib.parse import urlparse
 
 import attr
-import pkg_resources
 import structlog
+from importlib import resources
 
 from PyQt6.QtCore import QUrl, QTimer, pyqtSlot, Qt
-from PyQt6.QtNetwork import QNetworkCookie, QNetworkProxy
+from PyQt6.QtNetwork import QNetworkProxy
 from PyQt6.QtWebEngineCore import QWebEngineScript, QWebEngineProfile, QWebEnginePage
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWidgets import QApplication, QWidget, QSizePolicy, QVBoxLayout
@@ -80,7 +80,7 @@ class Process(multiprocessing.Process):
         if self.display_mode == config.DisplayMode.HIDDEN:
             argv += ["-platform", "minimal"]
         app = QApplication(argv)
-        profile = QWebEngineProfile("openconnect-sso")
+        profile = QWebEngineProfile()  # off-the-record: cookies stay in memory only
 
         if self.proxy:
             parsed = urlparse(self.proxy)
@@ -124,21 +124,9 @@ class Process(multiprocessing.Process):
 
 
 def on_sigterm(signum, frame):
-    global profile
     logger.info("Terminate requested.")
-    # Force flush cookieStore to disk. Without this hack the cookieStore may
-    # not be synced at all if the browser lives only for a short amount of
-    # time. Something is off with the call order of destructors as there is no
-    # such issue in C++.
-
-    # See: https://github.com/qutebrowser/qutebrowser/commit/8d55d093f29008b268569cdec28b700a8c42d761
-    cookie = QNetworkCookie()
-    profile.cookieStore().deleteCookie(cookie)
-
-    # Give some time to actually save cookies
-    exit_timer = QTimer(app)
-    exit_timer.timeout.connect(QApplication.quit)
-    exit_timer.start(1000)  # ms
+    # Off-the-record profile keeps cookies in memory only — no disk flush needed.
+    QApplication.quit()
 
 
 class WebBrowser(QWebEngineView):
@@ -158,7 +146,11 @@ class WebBrowser(QWebEngineView):
             return self._popupWindow.view()
 
     def authenticate_at(self, url, credentials):
-        script_source = pkg_resources.resource_string(__name__, "user.js").decode()
+        script_source = (
+            resources.files("openconnect_sso.browser")
+            .joinpath("user.js")
+            .read_text(encoding="utf-8")
+        )
         script = QWebEngineScript()
         script.setInjectionPoint(QWebEngineScript.InjectionPoint.DocumentCreation)
         script.setWorldId(QWebEngineScript.ScriptWorldId.ApplicationWorld)
@@ -166,7 +158,10 @@ class WebBrowser(QWebEngineView):
         self.page().scripts().insert(script)
 
         if credentials:
-            logger.info("Initiating autologin", cred=credentials)
+            logger.info(
+                "Initiating autologin",
+                username=getattr(credentials, "username", None),
+            )
             for url_pattern, rules in self._auto_fill_rules.items():
                 script = QWebEngineScript()
                 script.setInjectionPoint(QWebEngineScript.InjectionPoint.DocumentReady)

@@ -109,3 +109,7 @@ venv.bak/
 
 # pre-commit
 .pre-commit-cache
+
+/.fleet
+/.idea
+/.vscode

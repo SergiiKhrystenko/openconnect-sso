@@ -2,7 +2,6 @@ import asyncio
 import getpass
 import json
 import logging
-import os
 import signal
 import subprocess
 from pathlib import Path
@@ -30,11 +29,7 @@ def run(args):
     cfg = config.load()
 
     try:
-        if os.name == "nt":
-            asyncio.set_event_loop(asyncio.ProactorEventLoop())
-        auth_response, selected_profile = asyncio.get_event_loop().run_until_complete(
-            _run(args, cfg)
-        )
+        auth_response, selected_profile = asyncio.run(_run(args, cfg))
     except KeyboardInterrupt:
         logger.warn("CTRL-C pressed, exiting")
         return 130
@@ -83,7 +78,7 @@ def run(args):
         logger.warn("CTRL-C pressed, exiting")
         return 0
     finally:
-        handle_disconnect(cfg.on_disconnect)
+        handle_disconnect(cfg.on_disconnect, cfg.on_disconnect_shell)
 
 
 def configure_logger(logger, level):
@@ -155,6 +150,8 @@ async def _run(args, cfg):
 
     if args.on_disconnect and not cfg.on_disconnect:
         cfg.on_disconnect = args.on_disconnect
+    if args.on_disconnect_shell:
+        cfg.on_disconnect_shell = True
 
     return auth_response, selected_profile
 
@@ -171,7 +168,7 @@ async def select_profile(profile_list):
     # Somehow prompt_toolkit sets up a bogus signal handler upon exit
     # TODO: Report this issue upstream
     if hasattr(signal, "SIGWINCH"):
-        asyncio.get_event_loop().remove_signal_handler(signal.SIGWINCH)
+        asyncio.get_running_loop().remove_signal_handler(signal.SIGWINCH)
     if not selection:
         return selection
     logger.info("Selected profile", profile=selection.name)
@@ -185,16 +182,7 @@ def authenticate_to(host, proxy, credentials, display_mode, version):
 
 def run_openconnect(auth_info, host, proxy, version, args):
     as_root = next(([prog] for prog in ("doas", "sudo") if shutil.which(prog)), [])
-    try:
-        if not as_root:
-            if os.name == "nt":
-                import ctypes
-
-                if not ctypes.windll.shell32.IsUserAnAdmin():
-                    raise PermissionError
-            else:
-                raise PermissionError
-    except PermissionError:
+    if not as_root:
         logger.error(
             "Cannot find suitable program to execute as superuser (doas/sudo), exiting"
         )
@@ -220,7 +208,15 @@ def run_openconnect(auth_info, host, proxy, version, args):
     return subprocess.run(command_line, input=session_token).returncode
 
 
-def handle_disconnect(command):
-    if command:
-        logger.info("Running command on disconnect", command_line=command)
+def handle_disconnect(command, shell=False):
+    if not command:
+        return None
+    if shell:
+        logger.warning(
+            "Running on-disconnect command via shell (on_disconnect_shell = true)",
+            command=command,
+        )
         return subprocess.run(command, timeout=5, shell=True).returncode
+    cmd_list = shlex.split(command)
+    logger.info("Running command on disconnect", command=cmd_list)
+    return subprocess.run(cmd_list, timeout=5).returncode

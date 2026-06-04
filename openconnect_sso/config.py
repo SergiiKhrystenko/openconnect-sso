@@ -1,4 +1,6 @@
 import enum
+import os
+import stat
 from pathlib import Path
 from urllib.parse import urlparse, urlunparse
 
@@ -24,7 +26,7 @@ def load():
         return Config()
     with config_path.open() as config_file:
         try:
-            return Config.from_dict(toml.load(config_file))
+            cfg = Config.from_dict(toml.load(config_file))
         except Exception:
             logger.error(
                 "Could not load configuration file, ignoring",
@@ -33,12 +35,27 @@ def load():
             )
             return Config()
 
+    # Refuse on_disconnect if the config file is group/other-writable.
+    # on_disconnect is executed via shell=True; a world-writable config is a
+    # command-injection vector.
+    file_mode = config_path.stat().st_mode
+    if file_mode & (stat.S_IWGRP | stat.S_IWOTH):
+        logger.warning(
+            "Config file is group/other-writable; ignoring on_disconnect for security",
+            path=config_path,
+            mode=oct(file_mode),
+        )
+        cfg.on_disconnect = ""
+
+    return cfg
+
 
 def save(config):
     path = xdg.BaseDirectory.save_config_path(APP_NAME)
     config_path = Path(path) / "config.toml"
     try:
-        config_path.touch()
+        config_path.touch(mode=0o600, exist_ok=True)
+        os.chmod(config_path, 0o600)
         with config_path.open("w") as config_file:
             toml.dump(config.as_dict(), config_file)
     except Exception:
@@ -150,6 +167,7 @@ class Config(ConfigNode):
         },
     )
     on_disconnect = attr.ib(converter=str, default="")
+    on_disconnect_shell = attr.ib(default=False)
 
 
 class DisplayMode(enum.Enum):
