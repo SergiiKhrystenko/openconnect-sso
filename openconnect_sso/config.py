@@ -167,6 +167,7 @@ class Config(ConfigNode):
         },
     )
     on_disconnect = attr.ib(converter=str, default="")
+    on_disconnect_shell = attr.ib(default=False)
 
 
 class DisplayMode(enum.Enum):

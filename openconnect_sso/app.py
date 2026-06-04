@@ -78,7 +78,7 @@ def run(args):
         logger.warn("CTRL-C pressed, exiting")
         return 0
     finally:
-        handle_disconnect(cfg.on_disconnect)
+        handle_disconnect(cfg.on_disconnect, cfg.on_disconnect_shell)
 
 
 def configure_logger(logger, level):
@@ -150,6 +150,8 @@ async def _run(args, cfg):
 
     if args.on_disconnect and not cfg.on_disconnect:
         cfg.on_disconnect = args.on_disconnect
+    if args.on_disconnect_shell:
+        cfg.on_disconnect_shell = True
 
     return auth_response, selected_profile
 
@@ -206,10 +208,15 @@ def run_openconnect(auth_info, host, proxy, version, args):
     return subprocess.run(command_line, input=session_token).returncode
 
 
-def handle_disconnect(command):
-    if command:
+def handle_disconnect(command, shell=False):
+    if not command:
+        return None
+    if shell:
         logger.warning(
-            "Running shell command on disconnect (sourced from config file)",
+            "Running on-disconnect command via shell (on_disconnect_shell = true)",
             command=command,
         )
         return subprocess.run(command, timeout=5, shell=True).returncode
+    cmd_list = shlex.split(command)
+    logger.info("Running command on disconnect", command=cmd_list)
+    return subprocess.run(cmd_list, timeout=5).returncode

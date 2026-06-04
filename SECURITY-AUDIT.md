@@ -21,7 +21,7 @@
 | S-09 | cryptography 41.0.2 (pre 41.0.4+ CVE fixes)      | MEDIUM   | Fixed via deps |
 | S-10 | setuptools 68.0.0 runtime dep (CVE-2024-6345)    | LOW      | Fixed          |
 | S-11 | `--authenticate` prints session token to stdout  | LOW      | Accepted       |
-| S-12 | shell=False + opt-in for on_disconnect           | LOW      | Plan-only      |
+| S-12 | shell=False + opt-in for on_disconnect           | LOW      | Fixed          |
 | S-13 | Cookie lifetime / re-use across sessions         | LOW      | Plan-only      |
 
 ---
@@ -249,21 +249,22 @@ variable. Documented usage is the mitigation.
 
 ## Plan-only / Future Work
 
-### S-12 — Replace `shell=True` with opt-in in on_disconnect
+### S-12 — Replace `shell=True` with opt-in in on_disconnect (Fixed)
 
-**Target:** `openconnect_sso/app.py:handle_disconnect`
+**Locations:** `openconnect_sso/app.py:handle_disconnect`,
+`openconnect_sso/config.py:Config`, `openconnect_sso/cli.py`
 
-The proper fix is to default to `subprocess.run(shlex.split(command),
-shell=False)` and introduce an optional `on_disconnect_shell = true` config
-key for users who genuinely need shell semantics (pipes, variable expansion).
-This is deferred to a separate release to avoid silently breaking existing
-configs that rely on shell features.
+**Description:**
+`handle_disconnect` previously always executed `on_disconnect` with `shell=True`,
+enabling command injection via a malicious or tampered config file.
 
-**Implementation sketch:**
-1. Add `on_disconnect_shell = attr.ib(default=False)` to `Config`.
-2. In `handle_disconnect`: if `shell=False`, use `shlex.split(command)`.
-3. Document the new config key.
-4. Deprecation notice in CHANGELOG.
+**Remediation applied:**
+- `handle_disconnect` now defaults to `shell=False` using `shlex.split(command)`.
+- Users who need shell semantics (pipes, variable expansion) must explicitly
+  opt in by setting `on_disconnect_shell = true` in `config.toml` or passing
+  `--on-disconnect-shell` on the CLI. This triggers a `WARNING` log entry.
+- `Config.on_disconnect_shell = False` default means all existing configs
+  silently upgrade to the safe path; no breakage for simple commands.
 
 ### S-13 — Cookie lifetime and re-use audit
 
