@@ -2,13 +2,8 @@ CONTINUE_ON_ERROR ?= # should be used only for testing
 
 PRE_COMMIT_HOME=$(dir MAKEFILE_LIST).git/pre-commit
 
-ifeq ($(OS),Windows_NT)
-	PYTHON ?= python
-    VENV_BIN := .venv/Scripts
-else
-	PYTHON ?= python3
-    VENV_BIN := .venv/bin
-endif
+PYTHON ?= python3
+VENV_BIN := .venv/bin
 
 .ONESHELL:
 SHELL = bash

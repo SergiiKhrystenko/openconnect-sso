@@ -10,44 +10,21 @@ to Cisco SSL-VPNs
 
 ### Using pip/pipx
 
-A generic way that works on most 'standard' Linux distributions out of the box.
-The following example shows how to install `openconect-sso` along with its
-dependencies including Qt:
+Requires **Python 3.12 or newer** on **Linux**.
+
+> **Note:** This is a maintained fork. Install directly from GitHub — the PyPI
+> package is the unmaintained upstream version.
+
+Install via pipx (recommended for isolated installs):
 
 ```shell
-$ pip install --user pipx
-Successfully installed pipx
-$ pipx install "openconnect-sso[full]"
-⣾ installing openconnect-sso
-  installed package openconnect-sso 0.4.0, Python 3.7.5
-  These apps are now globally available
-    - openconnect-sso
-⚠️  Note: '/home/vlaci/.local/bin' is not on your PATH environment variable.
-These apps will not be globally accessible until your PATH is updated. Run
-`pipx ensurepath` to automatically add it, or manually modify your PATH in your
-shell's config file (i.e. ~/.bashrc).
-done! ✨ 🌟 ✨
-Successfully installed openconnect-sso
-$ pipx ensurepath
-Success! Added /home/vlaci/.local/bin to the PATH environment variable.
-Consider adding shell completions for pipx. Run 'pipx completions' for
-instructions.
-
-You likely need to open a new terminal or re-login for the changes to take
-effect. ✨ 🌟 ✨
+pipx install git+https://github.com/SergiiKhrystenko/openconnect-sso.git
 ```
 
-Of course you can also install via `pip` instead of `pipx` if you'd like to
-install system-wide or a virtualenv of your choice.
+Or via pip into a virtualenv of your choice:
 
-### On Arch Linux
-
-There is an unofficial package available for Arch Linux on
-[AUR](https://aur.archlinux.org/packages/openconnect-sso/). You can use your
-favorite AUR helper to install it:
-
-``` shell
-yay -S openconnect-sso
+```shell
+pip install git+https://github.com/SergiiKhrystenko/openconnect-sso.git
 ```
 
 ### Windows *(EXPERIMENTAL)*

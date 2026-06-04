@@ -1,10 +1,11 @@
 [project]
 name = "openconnect-sso"
-version = "0.8.1"
+version = "0.9.0"
 description = "Wrapper script for OpenConnect supporting Azure AD (SAMLv2) authentication to Cisco SSL-VPNs"
 license = "GPL-3.0-only"
 authors = [
     {name = "László Vaskó", email = "laszlo.vasko@outlook.com"},
+    {name = "Sergii Khrystenko", email = "sergseriy@gmail.com"},
 ]
 readme = "README.md"
 requires-python = ">=3.12,<3.15"
@@ -35,8 +36,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/vlaci/openconnect-sso"
-Repository = "https://github.com/vlaci/openconnect-sso"
+Homepage = "https://github.com/SergiiKhrystenko/openconnect-sso"
+Repository = "https://github.com/SergiiKhrystenko/openconnect-sso"
 
 [project.scripts]
 openconnect-sso = "openconnect_sso.cli:main"

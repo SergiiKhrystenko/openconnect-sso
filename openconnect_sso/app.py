@@ -2,7 +2,6 @@ import asyncio
 import getpass
 import json
 import logging
-import os
 import signal
 import subprocess
 from pathlib import Path
@@ -30,8 +29,6 @@ def run(args):
     cfg = config.load()
 
     try:
-        if os.name == "nt":
-            asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
         auth_response, selected_profile = asyncio.run(_run(args, cfg))
     except KeyboardInterrupt:
         logger.warn("CTRL-C pressed, exiting")
@@ -183,16 +180,7 @@ def authenticate_to(host, proxy, credentials, display_mode, version):
 
 def run_openconnect(auth_info, host, proxy, version, args):
     as_root = next(([prog] for prog in ("doas", "sudo") if shutil.which(prog)), [])
-    try:
-        if not as_root:
-            if os.name == "nt":
-                import ctypes
-
-                if not ctypes.windll.shell32.IsUserAnAdmin():
-                    raise PermissionError
-            else:
-                raise PermissionError
-    except PermissionError:
+    if not as_root:
         logger.error(
             "Cannot find suitable program to execute as superuser (doas/sudo), exiting"
         )

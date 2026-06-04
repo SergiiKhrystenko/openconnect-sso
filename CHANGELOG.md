@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.9.0
+
+- **BREAKING:** Minimum Python version is now 3.12 (3.12–3.14 supported)
+- **BREAKING:** Windows and macOS support removed — Linux only
+- Migrated packaging to PEP 621 + poetry-core; removed Poetry lock file
+- Removed obsolete Nix build files
+- Updated dependencies: lxml ≥5.2, PyQt6/WebEngine ≥6.7, keyring ≥24.3, requests ≥2.32
+- Security hardening (see SECURITY-AUDIT.md): config file permissions enforced to 0600,
+  XXE-hardened XML parsing, off-the-record browser profile, credential/token
+  log redaction, removed setuptools runtime dependency
+- CI: test matrix now covers Python 3.12, 3.13, 3.14
+- Project maintained at https://github.com/SergiiKhrystenko/openconnect-sso
+
 ## v0.8.1
 
 - Updating dependencies
