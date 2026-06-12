@@ -78,6 +78,7 @@ def run(args):
             args.proxy,
             args.ac_version,
             args.openconnect_args,
+            args.script,
         )
     except KeyboardInterrupt:
         logger.warn("CTRL-C pressed, exiting")
@@ -173,7 +174,7 @@ def authenticate_to(
     )
 
 
-def run_openconnect(auth_info, host, proxy, version, args):
+def run_openconnect(auth_info, host, proxy, version, args, script=None):
     as_root = next(([prog] for prog in ("doas", "sudo") if shutil.which(prog)), [])
     if not as_root:
         logger.error(
@@ -195,6 +196,8 @@ def run_openconnect(auth_info, host, proxy, version, args):
     ]
     if proxy:
         command_line.extend(["--proxy", proxy])
+    if script:
+        command_line.extend(["--script", script])
 
     session_token = auth_info.session_token.encode("utf-8")
     logger.debug("Starting OpenConnect", command_line=command_line)

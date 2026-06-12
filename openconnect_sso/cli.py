@@ -106,6 +106,12 @@ def create_argparser():
     )
 
     parser.add_argument(
+        "--script",
+        help="Pass a vpnc-script to openconnect to configure routing and DNS",
+        default=None,
+    )
+
+    parser.add_argument(
         "-l",
         "--log-level",
         help="",
