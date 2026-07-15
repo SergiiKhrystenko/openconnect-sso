@@ -4,7 +4,7 @@ Wrapper script for OpenConnect supporting Azure AD (SAMLv2) authentication
 to Cisco SSL-VPNs
 
 [![Tests Status
-](https://github.com/SergiiKhrystenko/openconnect-sso/workflows/Tests/badge.svg?branch=master&event=push)](https://github.com/SergiiKhrystenko/openconnect-sso/actions?query=workflow%3ATests+branch%3Amaster+event%3Apush)
+](https://github.com/komputronik-dpo/openconnect-sso/workflows/Tests/badge.svg?branch=master&event=push)](https://github.com/komputronik-dpo/openconnect-sso/actions?query=workflow%3ATests+branch%3Amaster+event%3Apush)
 
 ## Installation
 
@@ -18,19 +18,19 @@ Requires **Python 3.12 or newer** on **Linux**.
 Install via pipx (recommended for isolated installs):
 
 ```shell
-pipx install git+https://github.com/SergiiKhrystenko/openconnect-sso.git
+pipx install git+https://github.com/komputronik-dpo/openconnect-sso.git
 ```
 
 Or via pip into a virtualenv of your choice:
 
 ```shell
-pip install git+https://github.com/SergiiKhrystenko/openconnect-sso.git
+pip install git+https://github.com/komputronik-dpo/openconnect-sso.git
 ```
 
 ## Updating
 
 ```shell
-pipx install --force "git+https://github.com/SergiiKhrystenko/openconnect-sso.git"
+pipx install --force "git+https://github.com/komputronik-dpo/openconnect-sso.git"
 ```
 
 ## Usage
